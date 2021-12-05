@@ -1,0 +1,58 @@
+---
+title: "INFO 550 HW2--Yajie Liu"
+output: html_document
+---
+# First input the data and look the structure of data
+I get the current working directory, load the WGCNA package and load the data. 
+Then take a look at the what is in the data set.
+```{r, loading packages}
+library(kableExtra)
+library(car)
+library(kableExtra)
+library(knitr)
+library(here)
+here::i_am("Rmd/report.Rmd")
+```
+
+```{r, read in data, and look the structure of data}
+proj <- read.csv(here::here('Data','ProjectA.csv'))
+names(proj)
+head(proj)
+```
+# Explore the relationship between CPC counts and BMI
+## Test the correlation
+```{r}
+corr <- cor(proj[,2:6])
+kable(corr, "html") %>%
+  kable_styling("striped", full_width = F)
+```
+## Distribution of CPC counts and visualize the relationships with BMI and AGE
+```{r}
+par(mfrow=c(2,2))
+hist(proj$CD34, # histogram
+     prob = TRUE, # show densities instead of frequencies
+     xlab = "CD34 (mg/L)",
+     main = "Histogram/Density of CD34")
+lines(density(proj$CD34)) # density plot
+qqnorm(proj$CD34, main="Normal Q-Q plot of CD34")
+plot(proj$Age, proj$CD34, xlab = "Age (years)", ylab= "CD34+/CD133+ (mg/L)")
+plot(proj$BMI, proj$CD34, xlab = "BMI (kg/m^2)", ylab= "CD34+/CD133+ (mg/L)")
+
+```
+## Fit a Multivariables linear regression model to test all potential covariables
+```{r}
+#fit a MLR roughly
+proj$Age10 = proj$Age/10
+#CD34
+m2 = lm(CD133 ~ BMI + Age10 + Male + Black + HTN + DM + HC + CKD, data=proj)
+a=summary(m2)
+b <- as.data.frame(a$coefficients)
+b$`exp(coef)` <- exp(b$Estimate)
+b$`95% CI` <- paste("[", round(exp(b$Estimate-1.96*b$`Std. Error`),3), ", ", round(exp(b$Estimate+1.96*b$`Std. Error`),2), "]")
+b[,1:5] <- round(b[,1:5], 2)
+kbl(b, escape = F, align = "c", caption = "logistic regression for CD34") %>% kable_classic("striped", full_width = F)
+
+par(mfrow=c(2,2))
+plot(m2)
+
+```
