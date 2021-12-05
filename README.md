@@ -14,6 +14,7 @@ docker run -v /local_path/output:/project/output -it jane177/info550
 *Replace "/local_path" with desired directory on your laptop. The report can be retrieved from the output folder in this directory.
 
 Example
-
+```{r}
 docker run -v ~/Desktop/output:/project/output -it jane177/info550
+```
 will create a folder called output in specified directory which contains the output report.html
